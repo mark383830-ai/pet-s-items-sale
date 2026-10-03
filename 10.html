@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毛孩精品館 - 寵物用品購物網</title>
+    <!-- 引入 Tailwind CSS 進行快速美化 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 React 及 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 引入 Babel 以在瀏覽器中編譯 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* 自訂側邊欄捲軸樣式，讓視覺更美觀 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-gray-800">
+    <!-- React 應用程式的掛載點 -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // 8 項寵物商品資料，已更新為專屬產品圖片
+        const products = [
+            { id: 1, name: '頂級無穀鮮肉狗飼料', price: 850, image: 'https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcQdt-jumKWKywMkSeJstpcw0wfMaznJRyYVCZvjaYkSP8xGY0Rs0caaGclqak9Yfu8cLz3MbkmYvKXldBw' },
+            { id: 2, name: '營養滿分海鮮貓糧', price: 720, image: 'https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcRnmdv9JU9jRYmidC1jsVgwGxxg8KAOWZnjuW4k7znTj4yHwRa7Vx74E5y9RK5HJiAS-vVzZ15yb-C2FQs' },
+            { id: 3, name: '舒適安眠柔軟寵物床', price: 1200, image: 'https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcS5ESlb_a4dJs0uFRq0rOAGZcDqTG4yvEV4xL3joVlCJ0Trubeubek-EfchXDjuPXfLcfZ1LMyqh9gPNuQ' },
+            { id: 4, name: '互動式羽毛逗貓棒', price: 150, image: 'https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcTo6C2hxhySjMzcXADEsIybfF8CFqLBnQeUw7WdIUdjuKjorbiE2S9Oc8PL54ov82n7FgBnsqe1smkupRE' },
+            { id: 5, name: '反光耐用犬用牽繩', price: 350, image: 'https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcQinyXdpvwLh6UpifVTBmgrawFcdxfXCzTe0CgoYw42YacGj55dUm_FG6hDLqXpfL9kq_Gj287BSN_KNDE' },
+            { id: 6, name: '防滑陶瓷護頸寵物碗', price: 280, image: 'https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcQTmxlGP0wAE7OutJRKESJ894cxTB4oaU-mjq9D6TV-J3lLoajJ7e9ZfDmuq8s_vF0HISb3iMQ07wQg-3I' },
+            { id: 7, name: '豪華多層貓跳台', price: 2500, image: 'https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcRVOFmodBudqhTowkxPYwHw3SJohCb2m9AjHrk2naHNKRhl85v-0zEf6yumgp4Vve-N2E4kDbtOvcjATZ8' },
+            { id: 8, name: '溫和草本寵物沐浴乳', price: 450, image: 'https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcQ1ZUhfHcMWPoN3jn7MVtzsJKMXVvxrd9zjlv2l5nEn-BCew2eyfJlRB_ppR4QuI_WcFb8uh0It1mijsd8' }
+        ];
+
+        const App = () => {
+            const [cart, setCart] = useState([]);
+            const [isCartOpen, setIsCartOpen] = useState(false);
+
+            // 加入購物車邏輯
+            const addToCart = (product) => {
+                const existing = cart.find(item => item.id === product.id);
+                if (existing) {
+                    setCart(cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
+                } else {
+                    setCart([...cart, { ...product, quantity: 1 }]);
+                }
+                setIsCartOpen(true);
+            };
+
+            // 從購物車刪除單項商品
+            const removeFromCart = (id) => {
+                setCart(cart.filter(item => item.id !== id));
+            };
+
+            // 更新商品數量
+            const updateQuantity = (id, delta) => {
+                setCart(cart.map(item => {
+                    if (item.id === id) {
+                        const newQuantity = item.quantity + delta;
+                        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+                    }
+                    return item;
+                }));
+            };
+
+            // 計算總金額與總數量
+            const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-hidden">
+                    {/* 頂部導覽列 */}
+                    <header className="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
+                        <div className="max-w-6xl w-full mx-auto flex justify-between items-center">
+                            <h1 className="text-2xl font-extrabold text-amber-600 flex items-center gap-2">
+                                🐾 毛孩精品館
+                            </h1>
+                            <button 
+                                onClick={() => setIsCartOpen(!isCartOpen)}
+                                className="relative p-2 bg-amber-50 rounded-full hover:bg-amber-100 transition-colors"
+                            >
+                                <span className="text-xl">🛒</span>
+                                {totalItems > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow">
+                                        {totalItems}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* 商品列表區塊 */}
+                    <main className="flex-1 max-w-6xl w-full mx-auto p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {products.map(product => (
+                                <div key={product.id} className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col border border-gray-100">
+                                    <div className="h-56 overflow-hidden bg-white flex items-center justify-center p-4">
+                                        <img 
+                                            src={product.image} 
+                                            alt={product.name} 
+                                            className="max-w-full max-h-full object-contain hover:scale-110 transition-transform duration-500" 
+                                        />
+                                    </div>
+                                    <div className="p-5 flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-800">{product.name}</h3>
+                                            <p className="text-amber-600 font-black text-xl mt-2">NT$ {product.price.toLocaleString()}</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => addToCart(product)}
+                                            className="mt-5 w-full bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm"
+                                        >
+                                            加入購物車
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </main>
+
+                    {/* 購物車側邊欄遮罩層 */}
+                    {isCartOpen && (
+                        <div 
+                            className="fixed inset-0 bg-black bg-opacity-40 z-20 transition-opacity backdrop-blur-sm"
+                            onClick={() => setIsCartOpen(false)}
+                        ></div>
+                    )}
+
+                    {/* 購物車側邊滑出面板 */}
+                    <aside 
+                        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-30 transform transition-transform duration-300 ease-in-out flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                    >
+                        <div className="p-5 border-b flex justify-between items-center bg-amber-50">
+                            <h2 className="text-xl font-bold text-gray-800">購物車明細 ({totalItems})</h2>
+                            <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+                                ✖
+                            </button>
+                        </div>
+
+                        {/* 購物車內容區 */}
+                        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                            {cart.length === 0 ? (
+                                <div className="text-center text-gray-400 mt-20">
+                                    <div className="text-6xl mb-4 opacity-50">🛍️</div>
+                                    <p className="text-lg font-medium">購物車目前是空的喔！</p>
+                                    <p className="text-sm mt-2">快去幫毛孩挑選喜歡的禮物吧</p>
+                                </div>
+                            ) : (
+                                cart.map(item => (
+                                    <div key={item.id} className="flex gap-4 items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm hover:border-amber-200 transition-colors">
+                                        <img src={item.image} alt={item.name} className="w-20 h-20 rounded-lg object-contain bg-white" />
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-sm text-gray-700 line-clamp-1">{item.name}</h4>
+                                            <p className="text-amber-600 text-sm font-black mt-1">NT$ {item.price.toLocaleString()}</p>
+                                            
+                                            {/* 數量增減與刪除按鈕 */}
+                                            <div className="flex items-center justify-between mt-3">
+                                                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                                                    <button onClick={() => updateQuantity(item.id, -1)} className="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-amber-600 font-bold">-</button>
+                                                    <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
+                                                    <button onClick={() => updateQuantity(item.id, 1)} className="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-amber-600 font-bold">+</button>
+                                                </div>
+                                                <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors" title="刪除商品">
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* 結帳區 */}
+                        <div className="p-6 border-t bg-gray-50">
+                            <div className="flex justify-between items-center mb-5">
+                                <span className="font-bold text-gray-500">總計金額:</span>
+                                <span className="text-2xl font-black text-amber-600">NT$ {totalAmount.toLocaleString()}</span>
+                            </div>
+                            <button 
+                                className={`w-full py-3.5 rounded-xl font-bold text-lg text-white transition-all shadow-md ${cart.length === 0 ? 'bg-gray-300 cursor-not-allowed shadow-none' : 'bg-green-500 hover:bg-green-600 hover:-translate-y-0.5'}`}
+                                disabled={cart.length === 0}
+                                onClick={() => { 
+                                    alert('結帳成功！感謝您的購買 🐾 \n總金額為 NT$ ' + totalAmount.toLocaleString()); 
+                                    setCart([]); 
+                                    setIsCartOpen(false); 
+                                }}
+                            >
+                                前往結帳
+                            </button>
+                        </div>
+                    </aside>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
